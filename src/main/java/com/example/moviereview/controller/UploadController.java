@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-public class UploadController {
+public class  UploadController {
 
     @Value("${com.example.upload.path}")            // application.properties 의 변수
     private String uploadPath;
