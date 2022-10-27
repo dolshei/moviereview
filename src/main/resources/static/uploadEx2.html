@@ -66,8 +66,8 @@
         for(var i = 0; i < arr.length; i++){
             str += "<div>";
             str += "<img src='/display?fileName="+arr[i].thumbnailURL+"'>";
-            str += "<button class='removeBtn' data-name='"+arr[i].imageURL+"'>REMOVE</button>"
-            str += "<div>"
+            str += "<button class='removeBtn' data-name='"+arr[i].imageURL+"'>REMOVE</button>";
+            str += "<div>";
         }
         divArea.append(str);
 
@@ -87,9 +87,7 @@
                 targetDiv.remove();
             }
         } )
-
     });
-
 
 
 
