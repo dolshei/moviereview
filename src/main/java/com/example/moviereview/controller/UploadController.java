@@ -3,9 +3,12 @@ package com.example.moviereview.controller;
 import com.example.moviereview.dto.UploadResultDTO;
 import net.coobird.thumbnailator.Thumbnailator;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -26,7 +30,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-public class  UploadController {
+public class UploadController {
 
     @Value("${com.example.upload.path}")            // application.properties 의 변수
     private String uploadPath;
@@ -138,7 +142,7 @@ public class  UploadController {
 
             // HttpServletRequest 로 넘어오는 모든 request 값 key, value 확인
             Enumeration params = request.getParameterNames();
-            while(params.hasMoreElements()) {
+            while (params.hasMoreElements()) {
                 String name = (String) params.nextElement();
                 System.out.print(name + " : " + request.getParameter(name) + " . ");
             }
@@ -156,4 +160,31 @@ public class  UploadController {
         }
     }
 
+    // String size 파라미터를 추가해 원본파일인지 썸네일인지 구분할 수 있도록 구성한다.
+    // -> 만약 size 변수의 값이 1인 경우 원본 파일을 전송한다.
+    @GetMapping("/display")
+    public ResponseEntity<byte[]> getFile(String fileName, String size) {
+        ResponseEntity<byte[]> result = null;
+
+        try {
+            String srcFileName = URLDecoder.decode(fileName, "UTF-8");
+
+            File file = new File(uploadPath + File.separator + srcFileName);
+
+            if (size != null && size.equals("1")) {
+                file = new File(file.getParent(), file.getName().substring(2));
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+
+            // MIME타입 처리
+            headers.add("Content-type", Files.probeContentType(file.toPath()));
+
+            // 파일 데이터 처리
+            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return result;
+    }
 }
